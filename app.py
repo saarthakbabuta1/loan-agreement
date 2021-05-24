@@ -31,8 +31,11 @@ def document():
             return {"message":"image is missing"}
 
     if request.method == 'DELETE':
-        document_id = flask.request.args.get('document_id')
-        delete_document(document_id)
-        return {"message":"data has been deleted successfuly"}
+        if 'document_id' in flask.request.args:
+            document_id = flask.request.args.get('document_id')
+            delete_document(document_id)
+            return {"message":"data has been deleted successfuly"}
+        else:
+            return {"message":"document id missing"}
 
 app.run()
