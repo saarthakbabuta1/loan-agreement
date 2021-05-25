@@ -3,6 +3,9 @@ from flask.globals import request
 from bson.json_util import dumps
 from document import delete_document, upload_document,get_document
 import json
+import os
+from werkzeug.utils import secure_filename
+from helper import allowed_file
 
 app = flask.Flask(__name__)
 
@@ -23,12 +26,16 @@ def document():
             return {"message":"document id missing"}
     
     if request.method == 'POST':
-        if 'image' in flask.request.args:
-            image = flask.request.args.get('image')
-            upload_document(image)
-            return {"meassge" : "data inserted successfully"}
+        image = flask.request.files['file']
+        filename = secure_filename(image.filename)
+        if image and allowed_file(filename):
+            image.save(filename)
         else:
-            return {"message":"image is missing"}
+            return {"message":"File is either null or unsupported"}
+        print("File added in the folder")
+        upload_document(filename)
+        return {"meassge" : "data inserted successfully"}
+        
 
     if request.method == 'DELETE':
         if 'document_id' in flask.request.args:

@@ -8,10 +8,9 @@ pytesseract = "*"
 opencv-python = "*"
 tesseract = "*"
 flask = "*"
-pymongo[tls,srv]==3.6.1
 dnspython = "*"
-
-[dev-packages]
+pdf2image = "*"
+pypdf2 = "*"
 
 [requires]
 python_version = "3.9"

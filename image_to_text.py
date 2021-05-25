@@ -1,6 +1,8 @@
 # import the necessary packages
+from typing import Text
 import pytesseract
 import cv2
+import pdf2image
 
 
 def image_to_text(image):
@@ -14,8 +16,13 @@ def image_to_text(image):
     text = pytesseract.image_to_string(gray)
     return text
 
-# Read the image and print the text
-#print(image_to_text(cv2.imread("image.png")))
+def pdf_to_text(image):
+    pages = pdf2image.convert_from_path(pdf_path=image,dpi=200, size=(1654,2340))
+    text = ""
+    for i in range(len(pages)):
+        #pages[i].save(str(i) + '.png')
+        text = text + " "+ pytesseract.image_to_string(pages[i])
+    return text
 
 def get_paragraphs(text):
     par=[]
