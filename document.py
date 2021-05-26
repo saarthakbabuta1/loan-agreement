@@ -1,6 +1,6 @@
 import flask
 import cv2
-from image_to_text import get_paragraphs, image_to_text, pdf_to_text
+from convert_to_text import get_paragraphs, image_to_text, pdf_to_text
 from connection import create_connection
 import uuid
 import os
