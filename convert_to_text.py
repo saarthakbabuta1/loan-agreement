@@ -17,8 +17,10 @@ def image_to_text(image):
     return text
 
 def pdf_to_text(image):
+    # convert pdf to image
     pages = pdf2image.convert_from_path(pdf_path=image,dpi=200, size=(1654,2340))
     text = ""
+    # parse through all the images
     for i in range(len(pages)):
         #pages[i].save(str(i) + '.png')
         text = text + " "+ pytesseract.image_to_string(pages[i])

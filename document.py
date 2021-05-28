@@ -5,19 +5,21 @@ from connection import create_connection
 import uuid
 import os
 from bson.objectid import ObjectId
+from classify import classify
 
 def upload_document(image):
     if image.rsplit('.', 1)[1].lower() == 'pdf':
         data = pdf_to_text(image)
         par = get_paragraphs(data)
+        pagragraph_classification = classify(par[0])
         db = create_connection()
-        db.insert_one({"number_of_paragraphs":par[1],
+        db.insert_one({"number_of_paragraphs":par[1],"paragraph_classification":pagragraph_classification,
         "paragraphs":par[0],"data":data})
     
         return {"message":"data has been inserted"}
     
     else:
-    
+        
         # get the text from image.
         data = image_to_text(cv2.imread(image))
         # get the paragraphs from the image.
