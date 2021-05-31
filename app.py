@@ -6,6 +6,7 @@ import json
 import os
 from werkzeug.utils import secure_filename
 from helper import allowed_file
+import time
 
 app = flask.Flask(__name__)
 
@@ -26,6 +27,7 @@ def document():
             return {"message":"document id missing"}
     
     if request.method == 'POST':
+        start_time = time.time()
         image = flask.request.files['file']
         filename = secure_filename(image.filename)
         if image and allowed_file(filename):
@@ -34,6 +36,7 @@ def document():
             return {"message":"File is either null or unsupported"}
         print("File added in the folder")
         upload_document(filename)
+        print("Insertion completed in %s seconds" % (time.time() - start_time))
         return {"meassge" : "data inserted successfully"}
         
 

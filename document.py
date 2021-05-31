@@ -12,6 +12,7 @@ def upload_document(image):
         if image.rsplit('.', 1)[1].lower() == 'pdf':
             try:
                 data = pdf_to_text(image)
+                print("PDF has been converted to text")
                 par = get_paragraphs(data)
                 pagragraph_classification = classify(par[0])
                 db = create_connection()
