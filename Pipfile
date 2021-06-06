@@ -12,6 +12,7 @@ dnspython = "*"
 pdf2image = "*"
 pypdf2 = "*"
 fpdf = "*"
+python-docx = "*"
 
 [requires]
 python_version = "3.9"

@@ -6,7 +6,7 @@ import cv2
 import pdf2image
 import time
 import re
-
+import docx
 
 def image_to_text(image):
     try:
@@ -56,3 +56,17 @@ def get_paragraphs(text):
     except Exception as e:
         return(e)
 
+
+def word_to_text(file):
+    try:
+        par = []
+        doc = docx.Document(file)
+        all_paras = doc.paragraphs
+        for i in all_paras:
+            i = i.text.strip()
+            i = re.sub("\s\s+" , " ", i)
+            if len(i)>3:
+                par.append(i)
+        return par,len(par)
+    except Exception as e:
+        return(e)
