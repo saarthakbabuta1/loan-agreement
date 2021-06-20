@@ -4,16 +4,18 @@ import pytesseract
 import re
 import pdf2image
 
-file = "GHPL Loan Agreement-edited.pdf"
+#file = "GHPL Loan Agreement-edited.pdf"
 
-#file = "image.png"
+file = "image.png"
 
 def plot_boundary(file):
-    data = []
+    par = []
+    body = ""
     if file.rsplit('.', 1)[1].lower() == 'pdf':
         pages = pdf2image.convert_from_path(pdf_path=file,dpi=200, size=(1654,2340))
         # Load image, grayscale, Gaussian blur, Otsu's threshold
         for i in range(len(pages)):
+            data = []
             filename = file+str(i) + '.png'
             pages[i].save(filename)
             image = cv2.imread(filename)
@@ -34,11 +36,13 @@ def plot_boundary(file):
                 cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
                 cropped = image[y:y + h, x:x + w]
                 text = pytesseract.image_to_string(cropped)
-                data.append(text)
+                data = [text] + data
+                body = text + " " + body 
+            par.append(data)
             # cv2.imshow('thresh', thresh)
             # cv2.imshow('dilate', dilate)
-            cv2.imshow('image', image)
-            cv2.waitKey()
+        cv2.imshow('image', image)
+        cv2.waitKey()
     else:
 
         image = cv2.imread(file)
@@ -58,24 +62,19 @@ def plot_boundary(file):
             cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
             cropped = image[y:y + h, x:x + w]
             text = pytesseract.image_to_string(cropped)
-            data.append(text)
-        # cv2.imshow('thresh', thresh)
-        # cv2.imshow('dilate', dilate)
-            cv2.imshow('image', image)
-            cv2.waitKey()
+            par = [text] + par
+        cv2.imshow('image', image)
+        cv2.waitKey()
+    paragraph = []
 
-    text = ""
-    par = []
-
-    for i in data:
-        text = text + i
+    for i in par:
         i = re.sub("\s\s+", " ", i)
         i = re.sub("\n"," ",i)
         i = i.strip()
         if len(i)>3:
             text = text + i
-            par.append(i)
+            paragraph.append(i)
 
-    return text,par
+    return {'text':body,'paragraphs':paragraph}
 
-print(plot_boundary(file)[1])
+print(plot_boundary(file)['paragraphs'])
