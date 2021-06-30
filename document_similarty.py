@@ -73,7 +73,3 @@ def document_similarity(text1,text2,method="cosine"):
 
         similarity = 1 - nltk.cluster.cosine_distance(v1,v2)
     return similarity
-
-
-
-print(document_similarity("Hi, I am Saarthak","Hello, I am Tanvi"))
