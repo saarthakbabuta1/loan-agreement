@@ -3,6 +3,7 @@ import numpy as np
 import pytesseract
 import re
 import pdf2image
+import docx
 
 file = "GHPL_Loan_Agreement-edited.pdf"
 
@@ -15,8 +16,8 @@ def get_contours(img):
     thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
     # Create rectangular structuring element and dilate
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
-    dilate = cv2.dilate(thresh, kernel, iterations=5)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (4,4))
+    dilate = cv2.dilate(thresh, kernel, iterations=6)
 
     # Find contours and draw rectangle
     cnts = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -27,7 +28,7 @@ def get_contours(img):
 def pdf_to_text(file):
     par = []
     body = ""
-    if file.rsplit('.', 1)[1].lower() == 'pdf':
+    try:
         pages = pdf2image.convert_from_path(pdf_path=file,dpi=200, size=(1654,2340))
         # Load image, grayscale, Gaussian blur, Otsu's threshold
         for i in range(len(pages)):
@@ -45,73 +46,61 @@ def pdf_to_text(file):
                 data = [text] + data
                 body = text + " " + body 
             par.append(data)
+    except Exception as e:
+        print(e)
+        return({"Error:",e})
 
-    return body,par
+    return {"body":body,"paragraph":par}
 
 def image_to_text(file):
-    image = cv2.imread(file)
-    cnts = get_contours(img=image)
-    for c in cnts:
-        x,y,w,h = cv2.boundingRect(c)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
-        cropped = image[y:y + h, x:x + w]
-        body = pytesseract.image_to_string(cropped)
-        par = [body] + par
-    
-    return body,par
-
-
-
-def plot_boundary(file):
-    par = []
-    body = ""
-    if file.rsplit('.', 1)[1].lower() == 'pdf':
-        pages = pdf2image.convert_from_path(pdf_path=file,dpi=200, size=(1654,2340))
-        # Load image, grayscale, Gaussian blur, Otsu's threshold
-        for i in range(len(pages)):
-            data = []
-            filename = file+str(i) + '.png'
-            pages[i].save(filename)
-            image = cv2.imread(filename)
-            cnts = get_contours(img=image)
-                
-            for c in cnts:
-                x,y,w,h = cv2.boundingRect(c)
-                cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
-                cropped = image[y:y + h, x:x + w]
-                text = pytesseract.image_to_string(cropped)
-                data = [text] + data
-                body = text + " " + body 
-            par.append(data)
-    else:
-
+    try:
         image = cv2.imread(file)
         cnts = get_contours(img=image)
         for c in cnts:
             x,y,w,h = cv2.boundingRect(c)
             cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
             cropped = image[y:y + h, x:x + w]
-            text = pytesseract.image_to_string(cropped)
-            par = [text] + par
+            cv2.imshow()
+            body = pytesseract.image_to_string(cropped)
+            par = [body] + par
+    
+    except Exception as e:
+        print(e)
+        return({"Error:",e})
+    
+    return {"body":body,"paragraph":par}
+
+def word_to_text(file):
+    try:
+        par = []
+        doc = docx.Document(file)
+        all_paras = doc.paragraphs
+        for i in all_paras:
+            i = i.text.strip()
+            i = re.sub("\s\s+" , " ", i)
+            if len(i)>3:
+                par.append(i)
+        return par,len(par)
+    except Exception as e:
+        return(e)
+
+def get_paragraphs(par):
     paragraph = []
     for i in par:
-        print("length",len(i))
         if(len(i)>1):
             for j in i:
                 j = re.sub("\s\s+", " ", j)
                 j = re.sub("\n"," ",j)
                 j = j.strip()
                 if len(j) > 3:
-                    text = text + j
                     paragraph.append(j)
         else:
             i = re.sub("\s\s+", " ", i)
             i = re.sub("\n"," ",i)
             i = i.strip()
             if len(i)>3:
-                text = text + i
                 paragraph.append(i)
+    
+    return paragraph
 
-    return {'text':body,'paragraphs':paragraph}
 
-print(plot_boundary(file)['paragraphs'])
