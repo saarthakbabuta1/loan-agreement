@@ -15,6 +15,11 @@ def classify(paragraph):
     
     return paragraph_classifier
 
+def tags(paragraph):
+    return {"tag1":"Pre-Disbursement (CP)","tag2":"Informative",
+    "tag3":"Non Financial - Informative","tag4":"Confirmation Documents",
+    "tag5":"Board Resolution","tag6":"PDC(1)"}
+
     
 
 

@@ -6,7 +6,7 @@ from connection import create_connection
 import uuid
 import os
 from bson.objectid import ObjectId
-from classify import classify
+from classify import classify,tags
 
 def upload_document(image):
     try:
@@ -16,7 +16,8 @@ def upload_document(image):
                 print("PDF has been converted to text")
                 par = get_paragraphs(pdf_to_text(image)["paragraph"])
                 pagragraph_classification = classify(par)
-                db = create_connection()
+                paragraph_tags = tags()
+                db = create_connection()                
                 db.insert_one({"number_of_paragraphs":len(par),"paragraph_classification":pagragraph_classification,
                     "paragraphs":par,"data":data})
                 

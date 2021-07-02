@@ -7,6 +7,8 @@ import os
 from werkzeug.utils import secure_filename
 from helper import allowed_file
 import time
+import pandas as pd
+import openpyxl
 
 app = flask.Flask(__name__)
 
@@ -47,5 +49,21 @@ def document():
             return {"message":"data has been deleted successfuly"}
         else:
             return {"message":"document id missing"}
+
+@app.route('/download',methods=['GET'])
+def download():
+    
+    if 'document_id' in flask.request.args:
+        document_id = flask.request.args.get('document_id')
+        doc = get_document(document_id)
+        doc.pop("data")
+        df = pd.DataFrame(data=doc)
+        df = df.applymap(lambda x: x.encode('unicode_escape')
+        .decode('utf-8') if isinstance(x, str) else x)
+        df.to_excel('output.xlsx')
+
+
+    
+    return json.loads(dumps(doc))
 
 app.run()

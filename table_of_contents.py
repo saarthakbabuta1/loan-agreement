@@ -59,8 +59,8 @@ par = pdf_to_text("table_of_contents.pdf")["paragraph"]
 
 for j in par:
     for i in j:
+        if(i.lower() == "table of content"):
+            print("Index")
         i = i.strip()
         i = re.sub("\s\s+", "", i)
         i = re.sub("\n","",i)
-
-        print(i)
