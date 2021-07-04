@@ -64,6 +64,6 @@ def download():
 
 
     
-    return json.loads(dumps(doc))
+    return {"message":"document has been downloaded"}
 
 app.run()
