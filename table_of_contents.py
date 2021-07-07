@@ -46,8 +46,8 @@ def pdf_to_text(file):
 
                 data = [text] + data
                 body = text + " " + body 
-                cv2.imshow("image",cropped)
-                cv2.waitKey(0)
+                #cv2.imshow("image",cropped)
+                #cv2.waitKey(0)
             par.append(data)
     except Exception as e:
         print(e)
@@ -57,10 +57,15 @@ def pdf_to_text(file):
 
 par = pdf_to_text("table_of_contents.pdf")["paragraph"]
 
+heading = []
+page_no = []
 for j in par:
     for i in j:
-        if(i.lower() == "table of content"):
+        if(i.strip().lower() == "table of content"):
             print("Index")
+            continue
         i = i.strip()
         i = re.sub("\s\s+", "", i)
         i = re.sub("\n","",i)
+        i = re.sub("[.]","", i)
+        print(i)

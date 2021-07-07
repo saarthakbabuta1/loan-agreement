@@ -1,13 +1,11 @@
+from typing import Text
 import cv2
 import numpy as np
 import pytesseract
 import re
 import pdf2image
 import docx
-
-file = "GHPL_Loan_Agreement-edited.pdf"
-
-#file = "image.png"
+from helper import regex,is_heading
 
 def get_contours(img):
 
@@ -76,31 +74,33 @@ def word_to_text(file):
         doc = docx.Document(file)
         all_paras = doc.paragraphs
         for i in all_paras:
-            i = i.text.strip()
-            i = re.sub("\s\s+" , " ", i)
-            if len(i)>3:
-                par.append(i)
+            text = regex(i)
+            par.append(text)
         return par,len(par)
     except Exception as e:
         return(e)
 
 def get_paragraphs(par):
-    paragraph = []
-    for i in par:
-        if(len(i)>1):
-            for j in i:
-                j = re.sub("\s\s+", " ", j)
-                j = re.sub("\n"," ",j)
-                j = j.strip()
-                if len(j) > 3:
-                    paragraph.append(j)
-        else:
-            i = re.sub("\s\s+", " ", i)
-            i = re.sub("\n"," ",i)
-            i = i.strip()
-            if len(i)>3:
-                paragraph.append(i)
-    
-    return paragraph
+    print("Paragraph process started")
+    try:
+        paragraph = []
+        heading = []
+        for i in par:
+            if(len(i)>1):
+                for j in i:
+                    text = regex(j)
+                    if len(text) > 3 and text.lower() != 'page':
+                        paragraph.append(text)
+                        heading.append(is_heading(text))
+            else:
+                text = regex(i)
+                if len(text) > 3 and text.lower() != 'page':
+                    paragraph.append(text)
+                    heading.append(is_heading(text))
+        print("Paragraph process complete")
+        return {"paragraph":paragraph,"heading":heading}
+    except Exception as e:
+        print("Error Here",e)
+        return e
 
 
