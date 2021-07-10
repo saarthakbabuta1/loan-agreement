@@ -1,7 +1,8 @@
 import flask
 from flask.globals import request
+from numpy import frompyfunc
 from bson.json_util import dumps
-from document import delete_document, upload_document,get_document
+from document import delete_document, upload_document,get_document,get_paragraph_document
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -9,6 +10,9 @@ from helper import allowed_file
 import time
 import pandas as pd
 import openpyxl
+from classify import classify,classify_tags
+from tag_classes import *
+import requests
 
 app = flask.Flask(__name__)
 
@@ -61,9 +65,47 @@ def download():
         df = df.applymap(lambda x: x.encode('unicode_escape')
         .decode('utf-8') if isinstance(x, str) else x)
         df.to_excel('output.xlsx')
-
-
     
     return {"message":"document has been downloaded"}
+
+@app.route('/classify/tag1',methods=['POST'])
+def classify_tag1():
+    par = json.loads(request.data)
+    return {"data":classify(par['data'],tag1_classes)}
+
+@app.route('/classify/tag2',methods=['POST'])
+def classify_tag2():
+    par = json.loads(request.data)
+    return {"data":classify(par['data'],tag2_classes)}
+
+@app.route('/classify/tag3',methods=['POST'])
+def classify_tag3():
+    par = json.loads(request.data)
+    return {"data":classify(par['data'],tag3_classes)}
+
+@app.route('/classify/tag4',methods=['POST'])
+def classify_tag4():
+    par = json.loads(request.data)
+    return {"data":classify(par['data'],tag4_classes)}
+
+@app.route('/classify/tag5',methods=['POST'])
+def classify_tag5():
+    par = json.loads(request.data)
+    return {"data":classify(par['data'],tag5_classes)}
+
+@app.route('/classify/tag6',methods=['POST'])
+def classify_tag6():
+    par = json.loads(request.data)
+    return {"data":classify(par['data'],tag6_classes)}
+
+@app.route('/classify/<id>',methods=['POST'])
+def classify_all(id):
+    par = json.loads(dumps(get_paragraph_document(id)))['paragraphs']
+    tags = classify_tags(par,id)
+    if tags == "Updated":
+        return {"message":tags}
+    else:
+        return {"message":" Not Updated"}
+
 
 app.run()

@@ -7,7 +7,7 @@ from connection import create_connection
 import uuid
 import os
 from bson.objectid import ObjectId
-from classify import classify,tags
+from classify import classify
 
 def upload_document(image):
     try:
@@ -18,13 +18,11 @@ def upload_document(image):
                 par_heading = get_paragraphs(text["paragraph"])
                 par = par_heading["paragraph"]
                 heading = par_heading["heading"]
-                pagragraph_classification = classify(par)
-                paragraph_tags = tags(par)
+                
                 db = create_connection()
                 print(db)                
                 db.insert_one({"number_of_paragraphs":len(par),
-                "paragraph_classification":pagragraph_classification,
-                    "paragraphs":par,"heading":heading,"data":text["body"],"tag1":paragraph_tags["tag1"]})
+                    "paragraphs":par,"heading":heading,"data":text["body"]})
                 print("data inserted")
                 
                 return {"message":"PDF documnet has been inserted"}
@@ -73,6 +71,15 @@ def delete_document(document_id):
         db.delete_one({'_id': ObjectId('{}'.format(document_id))}) # Delete Document
         
         return {"message":"data has been deleted"}
+    except Exception as e:
+        return(e)
+
+def get_paragraph_document(document_id):
+    try:
+        db = create_connection() # create connection
+        x = db.find_one({'_id': ObjectId('{}'.format(document_id)) }) # Query from mongodb
+
+        return x
     except Exception as e:
         return(e)
 

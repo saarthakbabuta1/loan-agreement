@@ -16,6 +16,7 @@ python-docx = "*"
 pandas = "*"
 nltk = "*"
 openpyxl = "*"
+requests = "*"
 
 [requires]
 python_version = "3.9"
