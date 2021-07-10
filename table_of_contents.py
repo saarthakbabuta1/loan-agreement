@@ -40,14 +40,9 @@ def pdf_to_text(file):
                 area = cv2.contourArea(c)
                 cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
                 cropped = image[y:y + h, x:x + w]
-                
-
                 text = pytesseract.image_to_string(cropped)
-
                 data = [text] + data
                 body = text + " " + body 
-            cv2.imshow("image",image)
-            cv2.waitKey(0)
             par.append(data)
     except Exception as e:
         print(e)
@@ -57,8 +52,7 @@ def pdf_to_text(file):
 
 par = pdf_to_text("table_of_contents.pdf")["paragraph"]
 
-heading = []
-page_no = []
+content = []
 for j in par:
     for i in j:
         if(i.strip().lower() == "table of content"):
@@ -66,6 +60,14 @@ for j in par:
             continue
         i = i.strip()
         i = re.sub("\s\s+", "", i)
+        i = re.sub("Page","",i)
         i = re.sub("\n","",i)
         i = re.sub("[.]","", i)
-        print(i)
+        content.append(i)
+
+toc = []
+for i in range(0,len(content),2):
+
+    toc.append({"page:{}".format(content[i]),"heading:{}".format(content[i+1])})
+    print(toc)
+

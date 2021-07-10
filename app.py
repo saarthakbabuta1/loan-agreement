@@ -10,8 +10,7 @@ from helper import allowed_file
 import time
 import pandas as pd
 import openpyxl
-from classify import classify,classify_tags
-from tag_classes import *
+from classify import random_classification,classify_tags
 import requests
 
 app = flask.Flask(__name__)
@@ -68,35 +67,12 @@ def download():
     
     return {"message":"document has been downloaded"}
 
-@app.route('/classify/tag1',methods=['POST'])
-def classify_tag1():
+@app.route('/classify/tags',methods=['POST'])
+def classify_tag():
     par = json.loads(request.data)
-    return {"data":classify(par['data'],tag1_classes)}
-
-@app.route('/classify/tag2',methods=['POST'])
-def classify_tag2():
-    par = json.loads(request.data)
-    return {"data":classify(par['data'],tag2_classes)}
-
-@app.route('/classify/tag3',methods=['POST'])
-def classify_tag3():
-    par = json.loads(request.data)
-    return {"data":classify(par['data'],tag3_classes)}
-
-@app.route('/classify/tag4',methods=['POST'])
-def classify_tag4():
-    par = json.loads(request.data)
-    return {"data":classify(par['data'],tag4_classes)}
-
-@app.route('/classify/tag5',methods=['POST'])
-def classify_tag5():
-    par = json.loads(request.data)
-    return {"data":classify(par['data'],tag5_classes)}
-
-@app.route('/classify/tag6',methods=['POST'])
-def classify_tag6():
-    par = json.loads(request.data)
-    return {"data":classify(par['data'],tag6_classes)}
+    tags = random_classification()
+    print(tags)
+    return tags
 
 @app.route('/classify/<id>',methods=['POST'])
 def classify_all(id):

@@ -7,7 +7,6 @@ from connection import create_connection
 import uuid
 import os
 from bson.objectid import ObjectId
-from classify import classify
 
 def upload_document(image):
     try:
@@ -32,10 +31,8 @@ def upload_document(image):
         elif image.rsplit('.', 1)[1].lower() in ['docx','doc']:
             try:
                 par = word_to_text(image)
-                pagragraph_classification = classify(par[0])
                 db = create_connection()
-                db.insert_one({"number_of_paragraphs":par[1],"paragraph_classification":pagragraph_classification,
-                "paragraphs":par[0]})
+                db.insert_one({"number_of_paragraphs":par[1],"paragraphs":par[0]})
 
                 return {"message":"Word data has been inserted"}
             except Exception as e:
