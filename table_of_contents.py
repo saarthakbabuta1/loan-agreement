@@ -46,8 +46,8 @@ def pdf_to_text(file):
 
                 data = [text] + data
                 body = text + " " + body 
-                #cv2.imshow("image",cropped)
-                #cv2.waitKey(0)
+            cv2.imshow("image",image)
+            cv2.waitKey(0)
             par.append(data)
     except Exception as e:
         print(e)

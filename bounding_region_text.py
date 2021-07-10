@@ -29,6 +29,7 @@ def pdf_to_text(file):
     try:
         pages = pdf2image.convert_from_path(pdf_path=file,dpi=200, size=(1654,2340))
         # Load image, grayscale, Gaussian blur, Otsu's threshold
+        print("Converted PDF to Pages")
         for i in range(len(pages)):
             data = []
             filename = file+str(i) + '.png'
@@ -42,7 +43,9 @@ def pdf_to_text(file):
                 cropped = image[y:y + h, x:x + w]
                 text = pytesseract.image_to_string(cropped)
                 data = [text] + data
-                body = text + " " + body 
+                body = text + " " + body
+            
+            cv2.imwrite(filename,image)
             par.append(data)
     except Exception as e:
         print(e)
