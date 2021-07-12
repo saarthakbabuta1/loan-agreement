@@ -40,9 +40,9 @@ def document():
         else:
             return {"message":"File is either null or unsupported"}
         print("File added in the folder")
-        upload_document(filename)
+        id = upload_document(filename)
         print("Insertion completed in %s seconds" % (time.time() - start_time))
-        return {"meassge" : "data inserted successfully"}
+        return {"meassge" : "data inserted successfully in Document ID {}".format(id)}
         
 
     if request.method == 'DELETE':

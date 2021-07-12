@@ -14,8 +14,8 @@ def get_contours(img):
     thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
     # Create rectangular structuring element and dilate
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (4,4))
-    dilate = cv2.dilate(thresh, kernel, iterations=6)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+    dilate = cv2.dilate(thresh, kernel, iterations=7)
 
     # Find contours and draw rectangle
     cnts = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -39,14 +39,17 @@ def pdf_to_text(file):
                 
             for c in cnts:
                 x,y,w,h = cv2.boundingRect(c)
-                cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
-                cropped = image[y:y + h, x:x + w]
-                text = pytesseract.image_to_string(cropped)
-                data = [text] + data
-                body = text + " " + body
+                if w>50:
+                    cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
+                    cropped = image[y:y + h, x:x + w]
+                    text = pytesseract.image_to_string(cropped)
+                    data = [text] + data
+                    body = text + " " + body
+
             
             cv2.imwrite(filename,image)
             par.append(data)
+            print("Done {}".format(filename))
     except Exception as e:
         print(e)
         return({"Error:",e})

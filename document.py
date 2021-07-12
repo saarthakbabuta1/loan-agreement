@@ -19,12 +19,13 @@ def upload_document(image):
                 heading = par_heading["heading"]
                 
                 db = create_connection()
-                print(db)                
-                db.insert_one({"number_of_paragraphs":len(par),
+                id = ObjectId()
+                print(id)                
+                db.insert_one({"_id":id,"number_of_paragraphs":len(par),
                     "paragraphs":par,"heading":heading,"data":text["body"]})
                 print("data inserted")
                 
-                return {"message":"PDF documnet has been inserted"}
+                return id
             except Exception as e:
                 return(e)
 

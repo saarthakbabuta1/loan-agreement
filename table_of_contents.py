@@ -67,7 +67,6 @@ for j in par:
 
 toc = []
 for i in range(0,len(content),2):
-
-    toc.append({"page:{}".format(content[i]),"heading:{}".format(content[i+1])})
-    print(toc)
+    print({"page":"{}".format(content[i]),"heading":"{}".format(content[i+1])})
+    #toc.append({"page:{}".format(content[i]),"heading:{}".format(content[i+1])})
 

@@ -16,6 +16,10 @@ def regex(text):
 	text = re.sub("\s\s+", "",text)
 	text = re.sub("\n","",text)
 	text = re.sub("|","",text)
+	text = re.sub("\u201c","",text)
+	text = re.sub("\u201d","",text)
+	text = re.sub("\u2014","",text)
+	text = re.sub("\u2018","",text)
 	text = text.strip()
 	return text
 

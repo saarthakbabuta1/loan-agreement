@@ -17,6 +17,11 @@ pandas = "*"
 nltk = "*"
 openpyxl = "*"
 requests = "*"
+spacy = "*"
+gensim = "*"
+python-levenshtein = "*"
+pyldavis = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.9"
