@@ -10,6 +10,7 @@ from bson.objectid import ObjectId
 
 def upload_document(image):
     try:
+        id = ObjectId()
         if image.rsplit('.', 1)[1].lower() == 'pdf':
             try:
                 text = pdf_to_text(image)
@@ -19,8 +20,7 @@ def upload_document(image):
                 heading = par_heading["heading"]
                 
                 db = create_connection()
-                id = ObjectId()
-                print(id)                
+                
                 db.insert_one({"_id":id,"number_of_paragraphs":len(par),
                     "paragraphs":par,"heading":heading,"data":text["body"]})
                 print("data inserted")
@@ -32,10 +32,12 @@ def upload_document(image):
         elif image.rsplit('.', 1)[1].lower() in ['docx','doc']:
             try:
                 par = word_to_text(image)
+                print(par)
                 db = create_connection()
-                db.insert_one({"number_of_paragraphs":par[1],"paragraphs":par[0]})
+                db.insert_one({"_id":id,
+                "number_of_paragraphs":par[1],"paragraphs":par[0]})
 
-                return {"message":"Word data has been inserted"}
+                return id
             except Exception as e:
                 return(e)            
         else:
@@ -46,9 +48,9 @@ def upload_document(image):
                 par = get_paragraphs(image_to_text(image)["paragraph"])
                 db = create_connection()
                 # Insert data into the document
-                db.insert_one({"number_of_paragraphs":len(par),"paragraphs":par,"data":data})
+                db.insert_one({"_id":id,"number_of_paragraphs":len(par),"paragraphs":par,"data":data})
 
-                return {"message":"Image data has been inserted"}
+                return id
             except Exception as e:
                 return(e)
     except Exception as e:

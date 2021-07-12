@@ -78,10 +78,10 @@ def word_to_text(file):
     try:
         par = []
         doc = docx.Document(file)
-        all_paras = doc.paragraphs
-        for i in all_paras:
-            text = regex(i)
-            par.append(text)
+        for i in doc.paragraphs:
+            text = regex(i.text)
+            if len(text)>0:
+                par.append(text)
         return par,len(par)
     except Exception as e:
         return(e)
