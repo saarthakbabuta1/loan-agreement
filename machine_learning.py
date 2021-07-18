@@ -50,7 +50,7 @@ def confusionMatrix(Y_test,prediction):
     columns=['pred:{:}'.format(x) for x in unique_label])
     return cmtx
 
-def svm(tag,kernel = "linear"):
+def data(tag):
     X_train,X_test,Y_train,Y_test = train_test_split(df.Clause,df[tag],
     test_size=0.2,random_state = 123)   
 
@@ -59,11 +59,17 @@ def svm(tag,kernel = "linear"):
     Y_train = encoder.fit_transform(Y_train)
     Y_test = encoder.fit_transform(Y_test)
 
-    tfidf_vect_ngram = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}',ngram_range=(2,3),max_features=5000)
+    tfidf_vect_ngram = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}',max_features=5000)
     tfidf_vect_ngram.fit(df["Clause"])
     xtrain_tfidf_ngram =  tfidf_vect_ngram.transform(X_train)
     xvalid_tfidf_ngram =  tfidf_vect_ngram.transform(X_test)
 
+    return xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test
+
+
+
+def svm(tag,kernel = "linear"):
+    xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
     model = SVC(kernel=kernel)
     svm_model = model.fit(xtrain_tfidf_ngram,Y_train)
 
@@ -105,20 +111,7 @@ def naive_bayes_classifier(tag):
 
 
 def random_forest(tag):
-    X_train,X_test,Y_train,Y_test = train_test_split(df.Clause,df[tag],
-    test_size=0.2,random_state = 123)
-
-    # label encode the target variable 
-    encoder = preprocessing.LabelEncoder()
-    Y_train = encoder.fit_transform(Y_train)
-    Y_test = encoder.fit_transform(Y_test)
-
-
-    tfidf_vect_ngram = TfidfVectorizer(analyzer='word',token_pattern=r'\w{1,}', max_features=5000)
-    tfidf_vect_ngram.fit(df["Clause"])
-    xtrain_tfidf_ngram =  tfidf_vect_ngram.transform(X_train)
-    xvalid_tfidf_ngram =  tfidf_vect_ngram.transform(X_test)
-
+    xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
     model = ensemble.RandomForestClassifier()
     rf = model.fit(xtrain_tfidf_ngram, Y_train)
 
@@ -127,20 +120,8 @@ def random_forest(tag):
     return metrics.accuracy_score(predicted,Y_test)
 
 def linearmodel(tag):
-    X_train,X_test,Y_train,Y_test = train_test_split(df.Clause,df[tag],
-    test_size=0.2,random_state = 123)
-
-        # label encode the target variable 
-    encoder = preprocessing.LabelEncoder()
-    Y_train = encoder.fit_transform(Y_train)
-    Y_test = encoder.fit_transform(Y_test)
-
-
-    tfidf_vect_ngram = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}', max_features=5000)
-    tfidf_vect_ngram.fit(df["Clause"])
-    xtrain_tfidf_ngram =  tfidf_vect_ngram.transform(X_train)
-    xvalid_tfidf_ngram =  tfidf_vect_ngram.transform(X_test)
-
+    xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
+    
     model = linear_model.LogisticRegression()
     rf = model.fit(xtrain_tfidf_ngram, Y_train)
 
@@ -174,9 +155,9 @@ def topic_modeling(tag):
     print(topic_summaries)
 
 
-print("Naive Bayes Tag1: ",naive_bayes_classifier("Tag1"))
-print("SVM Tag1: ",svm("Tag1"))
-print("Random Forest Tag1: ",random_forest("Tag1"))
-print("Linear Model: ",linearmodel("Tag1"))
+print("Naive Bayes Tag1: ",naive_bayes_classifier("Tag2"))
+print("SVM Tag1: ",svm("Tag2"))
+print("Random Forest Tag1: ",random_forest("Tag2"))
+print("Linear Model: ",linearmodel("Tag2"))
 
 #topic_modeling("Tag1")
