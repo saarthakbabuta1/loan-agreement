@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import re
 import nltk
-from sklearn.model_selection import train_test_split,learning_curve
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split,learning_curve,GridSearchCV
 from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer,TfidfVectorizer
@@ -13,7 +14,7 @@ from sklearn import preprocessing, linear_model, naive_bayes, metrics
 from sklearn import decomposition, ensemble
 from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix
-import matplotlib.pyplot as plt
+
 
 df = pd.read_csv("mapping_nb.csv")
 
@@ -91,10 +92,11 @@ def learningCurve(estimator,X_train,Y_train):
     plt.show()
 
 
-def svm(tag,kernel = "linear"):
+def svm(tag,parameters):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
-    model = SVC(kernel=kernel)
-    svm_model = model.fit(xtrain_tfidf_ngram,Y_train)
+    model = SVC()
+    svm_model = GridSearchCV(model,parameters)
+    svm_model.fit(xtrain_tfidf_ngram,Y_train)
 
     prediction = svm_model.predict(xvalid_tfidf_ngram)
     acc = metrics.accuracy_score(prediction,Y_test)
@@ -136,18 +138,19 @@ def naive_bayes_classifier(tag):
     return np.mean(predicted == Y_test)
 
 
-def random_forest(tag,n_estimators=10,max_features = 500,max_depth=10):
+def random_forest(tag,parameters):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
-    model = ensemble.RandomForestClassifier(n_estimators = n_estimators,max_features = max_features,
-    max_depth=max_depth)
-    rf = model.fit(xtrain_tfidf_ngram, Y_train)
+    model = ensemble.RandomForestClassifier()
+    rf = GridSearchCV(model,parameters)
+    rf.fit(xtrain_tfidf_ngram, Y_train)
 
     predicted = rf.predict(xvalid_tfidf_ngram)
     print(confusionMatrix(Y_test,predicted))
-    learningCurve(estimator=rf,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
+    print(rf.best_params_)
+    #learningCurve(estimator=rf,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
     return metrics.accuracy_score(predicted,Y_test)
 
-def linearmodel(tag):
+def linearmodel(tag,parameters):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
     # learning rate
     model = linear_model.LogisticRegression()
@@ -158,15 +161,17 @@ def linearmodel(tag):
     learningCurve(estimator=rf,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
     return metrics.accuracy_score(predicted,Y_test)
 
-def gradientboosting(tag):
+def gradientboosting(tag,parameters):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
     # learning rate
-    model = ensemble.GradientBoostingClassifier(n_estimators=100,max_depth=10)
-    gb = model.fit(xtrain_tfidf_ngram, Y_train)
+    model = ensemble.GradientBoostingClassifier()
+    gb = GridSearchCV(model,parameters)
+    gb.fit(xtrain_tfidf_ngram, Y_train)
 
     predicted = gb.predict(xvalid_tfidf_ngram)
     print(confusionMatrix(Y_test,predicted))
-    learningCurve(estimator=gb,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
+    print(gb.best_params_)
+    #learningCurve(estimator=gb,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
     return metrics.accuracy_score(predicted,Y_test)
 
 def decision_tree(tag):
@@ -206,12 +211,18 @@ def topic_modeling(tag):
     print(topic_summaries)
 
 
-print("Naive Bayes Tag1: ",naive_bayes_classifier("Tag1"))
-print("SVM Tag1: ",svm("Tag1"))
-print("Random Forest Tag1: ",random_forest("Tag1",n_estimators=30,max_features=500,max_depth=25))
-print("Linear Model: ",linearmodel("Tag2"))
-print("Gradient Boosting: ",gradientboosting("Tag1"))
-print("Decision Tree: ",decision_tree("Tag1"))
+#print("Naive Bayes Tag1: ",naive_bayes_classifier("Tag1"))
+#print("SVM Tag1: ",svm("Tag1",{'kernel':('linear', 'rbf')}))
+param_rf = {
+    'n_estimators': [100,300,500,600,700,800],
+    "max_depth":[20,22,26,28,30,32,34,36]
+}
+#{'max_depth': 32, 'n_estimators': 600}
+#print("Random Forest Tag1: ",random_forest("Tag1",param_rf))
+#print("Linear Model: ",linearmodel("Tag1"))
+param_boosting = {"n_estimators":[100,200,300,400,500],"max_depth":[10,20,30,40]}
+print("Gradient Boosting: ",gradientboosting("Tag1",param_boosting))
+#print("Decision Tree: ",decision_tree("Tag1"))
 
 #topic_modeling("Tag1")
 

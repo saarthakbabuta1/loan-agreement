@@ -2,9 +2,14 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.probability import FreqDist
 import math
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split,learning_curve,GridSearchCV
+from nltk.stem.snowball import SnowballStemmer
+import pandas as pd
 
-nltk.download('stopwords')
-nltk.download('punkt')
+
+#nltk.download('stopwords')
+#nltk.download('punkt')
 
 def document_similarity(text1,text2,method="cosine"):
     stopwords_en = stopwords.words("english")
@@ -53,19 +58,6 @@ def document_similarity(text1,text2,method="cosine"):
     for word in text2:
         text2_df_idf_dict[word] = (text2_tf_dict[word] * text12_idf_dict[word])
     
-
-    # print("Text1",text1_count_dict)
-    # print("Text1-tf",text1_tf_dict)
-    
-
-    # print("Text2",text2_count_dict)
-    # print("Text2-tf",text2_tf_dict)
-
-    # print("IDF",text12_idf_dict)
-
-    # print("Text1 DF IDF",text1_df_idf_dict)
-    # print("Text2 DF IDF",text2_df_idf_dict)
-
     similarity = None
     if method == "cosine":
         v1 = list(text1_df_idf_dict.values())
@@ -73,3 +65,41 @@ def document_similarity(text1,text2,method="cosine"):
 
         similarity = 1 - nltk.cluster.cosine_distance(v1,v2)
     return similarity
+
+df = pd.read_csv("mapping_nb.csv")
+
+stop = stopwords.words('english')
+stop.extend(['a','an','the','to'])
+
+df['Clause'] = df['Clause'].str.lower()
+df['Clause'] = df['Clause'].str.replace('\t','')
+df['Clause'] = df['Clause'].str.replace('\n',' ')
+df['Clause'] = df['Clause'].str.replace(r"\(.*\)","",regex=True)
+df['Clause'] = df['Clause'].str.replace('\d.\d.\d.','',regex=True)
+df['Clause'] = df['Clause'].str.replace('\d', '',regex=True)
+df['Clause'] = df['Clause'].str.split(' ').apply(lambda x: ' '.join(k for k in x if k not in stop))
+df['Clause'] = df['Clause'].str.replace('[^\w\s]','',regex=True)
+df['Clause'] = df['Clause'].str.strip()
+
+
+def similarity_file(df,Tag):
+    data = []
+    for i,row in df.iterrows():
+        #print(row['Clause'])
+        print(i)
+        for i1,row1 in df.iterrows():
+            try:
+                data.append([row['Clause'],row1['Clause'],row[Tag],row1[Tag],document_similarity(row['Clause'],row1['Clause'])])
+            except Exception as e:
+                data.append([row['Clause'],row1['Clause'],row[Tag],row1[Tag],None])
+
+    document_similarity_df = pd.DataFrame(data)
+    document_similarity_df.columns = ['Clause1','Clause2','Tag1','Tag2','Text_Similarity']
+    group_data = document_similarity_df.groupby(['Clause1','Tag1','Tag2'],as_index=False).Text_Similarity.mean()
+
+    document_similarity_df.to_csv("doc.csv")
+    group_data.to_csv("text_similarity.csv")
+
+    return "Check text_similarity.csv"
+
+similarity_file(df,"Tag3")
