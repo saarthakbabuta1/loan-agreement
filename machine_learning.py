@@ -1,3 +1,4 @@
+from numpy.lib import average
 import pandas as pd
 import numpy as np
 import re
@@ -13,7 +14,7 @@ from sklearn.pipeline import Pipeline
 from sklearn import preprocessing, linear_model, naive_bayes, metrics
 from sklearn import decomposition, ensemble
 from sklearn.svm import SVC
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix,f1_score
 
 
 df = pd.read_csv("mapping_nb.csv")
@@ -100,10 +101,10 @@ def svm(tag,parameters):
 
     prediction = svm_model.predict(xvalid_tfidf_ngram)
     acc = metrics.accuracy_score(prediction,Y_test)
-
+    f1_scr = f1_score(Y_test,prediction,average="weighted")
     print(confusionMatrix(Y_test,prediction))
-    learningCurve(estimator=svm_model,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
-    return acc
+    #learningCurve(estimator=svm_model,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
+    return {"accuracy":acc,"f1_Score":f1_scr}
 
     
 
@@ -124,18 +125,22 @@ def naive_bayes_classifier(tag):
 
     tfidf_transformer = TfidfTransformer()
     X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-    prior_tag1 = [0.676,0.198,0.077,0.049]
+    #prior_tag1 = [0.676,0.198,0.077,0.049]
+    #prior_tag2 = [0.54,0.21,0.09,0.08,0.06,0.02]
+    prior_tag3 = [0.26,0.23,0.12,0.11,0.09,0.09,0.07,0.03]
     #clf = MultinomialNB().fit(X_train_tfidf, Y_train)
     # prior = None
-    text_clf = Pipeline([('vect', CountVectorizer()), ('tfidf', TfidfTransformer()), ('clf', MultinomialNB(class_prior = prior_tag1))])
+    text_clf = Pipeline([('vect', CountVectorizer()), ('tfidf', TfidfTransformer()), ('clf', MultinomialNB(class_prior = prior_tag3))])
     text_clf = text_clf.fit(X_train,Y_train)
 
     # Performance of NB Classifier
 
     predicted = text_clf.predict(X_test)
     print(confusionMatrix(Y_test,predicted))
-    learningCurve(estimator=text_clf,X_train=X_train,Y_train=Y_train)
-    return np.mean(predicted == Y_test)
+    acc = np.mean(predicted == Y_test)
+    f1_scr = f1_score(Y_test,predicted,average="weighted")
+    #learningCurve(estimator=text_clf,X_train=X_train,Y_train=Y_train)
+    return {"accuracy":acc,"f1_Score":f1_scr}
 
 
 def random_forest(tag,parameters):
@@ -147,19 +152,22 @@ def random_forest(tag,parameters):
     predicted = rf.predict(xvalid_tfidf_ngram)
     print(confusionMatrix(Y_test,predicted))
     print(rf.best_params_)
+    f1_scr = f1_score(Y_test,predicted,average="weighted")
+    acc = metrics.accuracy_score(Y_test,predicted)
     #learningCurve(estimator=rf,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
-    return metrics.accuracy_score(predicted,Y_test)
+    return {"accuracy":acc,"f1_Score":f1_scr}
 
-def linearmodel(tag,parameters):
+def linearmodel(tag):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
     # learning rate
     model = linear_model.LogisticRegression()
     rf = model.fit(xtrain_tfidf_ngram, Y_train)
 
     predicted = rf.predict(xvalid_tfidf_ngram)
-    print(confusionMatrix(Y_test,predicted))
-    learningCurve(estimator=rf,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
-    return metrics.accuracy_score(predicted,Y_test)
+    f1_scr = f1_score(Y_test,predicted,average="weighted")
+    acc = metrics.accuracy_score(Y_test,predicted)
+    #learningCurve(estimator=rf,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
+    return {"accuracy":acc,"f1_Score":f1_scr}
 
 def gradientboosting(tag,parameters):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
@@ -169,10 +177,11 @@ def gradientboosting(tag,parameters):
     gb.fit(xtrain_tfidf_ngram, Y_train)
 
     predicted = gb.predict(xvalid_tfidf_ngram)
-    print(confusionMatrix(Y_test,predicted))
+    f1_scr = f1_score(Y_test,predicted,average="weighted")
+    acc = metrics.accuracy_score(Y_test,predicted)
     print(gb.best_params_)
     #learningCurve(estimator=gb,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
-    return metrics.accuracy_score(predicted,Y_test)
+    return {"accuracy":acc,"f1_Score":f1_scr}
 
 def decision_tree(tag):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
@@ -181,9 +190,10 @@ def decision_tree(tag):
     decision_tree = model.fit(xtrain_tfidf_ngram, Y_train)
 
     predicted = decision_tree.predict(xvalid_tfidf_ngram)
-    print(confusionMatrix(Y_test,predicted))
-    learningCurve(estimator=decision_tree,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
-    return metrics.accuracy_score(predicted,Y_test)
+    acc = metrics.accuracy_score(Y_test,predicted)
+    f1_scr = f1_score(Y_test,predicted,average="weighted")
+    #learningCurve(estimator=decision_tree,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
+    return {"accuracy":acc,"f1_Score":f1_scr}
 
 def topic_modeling(tag):
     X_train,X_test,Y_train,Y_test = train_test_split(df.Clause,df[tag],
@@ -211,18 +221,18 @@ def topic_modeling(tag):
     print(topic_summaries)
 
 
-#print("Naive Bayes Tag1: ",naive_bayes_classifier("Tag1"))
-#print("SVM Tag1: ",svm("Tag1",{'kernel':('linear', 'rbf')}))
+print("Naive Bayes Tag3: ",naive_bayes_classifier("Tag3"))
+print("SVM Tag3: ",svm("Tag3",{'kernel':('linear', 'rbf')}))
 param_rf = {
     'n_estimators': [100,300,500,600,700,800],
     "max_depth":[20,22,26,28,30,32,34,36]
 }
 #{'max_depth': 32, 'n_estimators': 600}
-#print("Random Forest Tag1: ",random_forest("Tag1",param_rf))
-#print("Linear Model: ",linearmodel("Tag1"))
-param_boosting = {"n_estimators":[100,200,300,400,500],"max_depth":[10,20,30,40]}
-print("Gradient Boosting: ",gradientboosting("Tag1",param_boosting))
-#print("Decision Tree: ",decision_tree("Tag1"))
+print("Random Forest Tag3: ",random_forest("Tag3",param_rf))
+print("Linear Model Tag3: ",linearmodel("Tag3"))
+param_boosting = {"n_estimators":[300,400],"max_depth":[10,15]}
+print("Gradient Boosting Tag3: ",gradientboosting("Tag3",param_boosting))
+print("Decision Tree Tag3: ",decision_tree("Tag3"))
 
 #topic_modeling("Tag1")
 
