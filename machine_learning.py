@@ -39,7 +39,7 @@ df['Clause'] = df['Clause'].str.replace('\t','')
 df['Clause'] = df['Clause'].str.replace('\n',' ')
 df['Clause'] = df['Clause'].str.replace(r"\(.*\)","",regex=True)
 df['Clause'] = df['Clause'].str.replace('\d.\d.\d.','',regex=True)
-df['Clause'] = df['Clause'].str.replace('\d+', '',regex=True)
+df['Clause'] = df['Clause'].str.replace('\d', '',regex=True)
 df['Clause'] = df['Clause'].str.split(' ').apply(lambda x: ' '.join(k for k in x if k not in stop))
 df['Clause'] = df['Clause'].str.strip()
 
