@@ -68,11 +68,15 @@ def download():
     
     return {"message":"document has been downloaded"}
 
-@app.route('/classify/tags',methods=['POST'])
-def classify_tag():
+@app.route('/classify/tags/<tag>',methods=['POST'])
+def classify_tag(tag):
+    print(tag)
     par = json.loads(request.data)
-    tags = classify(par)
-    print(tags)
+    if(tag in ["Tag1","Tag2","Tag3"]):
+        tags = classify(par,tag)
+        print(tags)
+    else:
+        tags = ["Unknow Tag"]
     return {"data":tags[0]}
 
 @app.route('/classify/<id>',methods=['POST'])

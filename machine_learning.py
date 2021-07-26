@@ -238,15 +238,15 @@ param_boosting = {"n_estimators":[300],"max_depth":[10]}
 #topic_modeling("Tag1")
 
 
-def voting_clasifier():
-    clf1 = linearmodel("Tag1")['model']
-    clf2 = svm("Tag1",{'kernel':('linear', 'rbf')})['model']
-    clf3 = random_forest("Tag1",param_rf)['model']
+def voting_clasifier(tag):
+    clf1 = linearmodel(tag)['model']
+    clf2 = svm(tag,{'kernel':('linear', 'rbf')})['model']
+    clf3 = random_forest(tag,param_rf)['model']
    
     eclf3 = ensemble.VotingClassifier(estimators=[('lr', clf1), ('svm', clf2),
     ('rf',clf3)],voting='soft')#, weights=[2,1,1],flatten_transform=True)
 
-    xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data("Tag1")
+    xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
 
     eclf3 = eclf3.fit(xtrain_tfidf_ngram,Y_train)
 
@@ -255,8 +255,8 @@ def voting_clasifier():
     print("VotingClassifier Accuracy: ",acc)
     return eclf3
 
-def classify(par):
-    model = voting_clasifier()
+def classify(par,tag):
+    model = voting_clasifier(tag)
     tfidf_vect_ngram = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}',max_features=5000)
     tfidf_vect_ngram.fit(df["Clause"])
     xtrain_tfidf_ngram =  tfidf_vect_ngram.transform(par)
