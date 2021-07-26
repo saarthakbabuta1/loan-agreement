@@ -11,6 +11,7 @@ import time
 import pandas as pd
 import openpyxl
 from classify import random_classification,classify_tags
+from machine_learning import classify
 import requests
 
 app = flask.Flask(__name__)
@@ -70,9 +71,9 @@ def download():
 @app.route('/classify/tags',methods=['POST'])
 def classify_tag():
     par = json.loads(request.data)
-    tags = random_classification()
+    tags = classify(par)
     print(tags)
-    return tags
+    return {"data":tags[0]}
 
 @app.route('/classify/<id>',methods=['POST'])
 def classify_all(id):

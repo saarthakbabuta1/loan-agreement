@@ -4,7 +4,7 @@ import pytesseract
 import re
 import pdf2image
 import docx
-
+import base64
 
 def get_contours(img):
 
@@ -67,6 +67,12 @@ for j in par:
 
 toc = []
 for i in range(0,len(content),2):
-    print({"page":"{}".format(content[i]),"heading":"{}".format(content[i+1])})
-    #toc.append({"page:{}".format(content[i]),"heading:{}".format(content[i+1])})
+    try:
+#    print({"page":"{}".format(content[i]),"heading":"{}".format(content[i+1])})
+        toc.append([content[i],content[i+1]])
+    except Exception as e:
+        print(e)
 
+for i in toc:
+    print(i[0])
+    print(i[1])

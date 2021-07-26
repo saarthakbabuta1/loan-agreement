@@ -58,9 +58,9 @@ def data(tag):
     test_size=0.2,random_state = 1234)   
 
     # label encode the target variable 
-    encoder = preprocessing.LabelEncoder()
-    Y_train = encoder.fit_transform(Y_train)
-    Y_test = encoder.fit_transform(Y_test)
+    # encoder = preprocessing.LabelEncoder()
+    # Y_train = encoder.fit_transform(Y_train)
+    # Y_test = encoder.fit_transform(Y_test)
 
     tfidf_vect_ngram = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}',max_features=5000)
     tfidf_vect_ngram.fit(df["Clause"])
@@ -91,20 +91,20 @@ def learningCurve(estimator,X_train,Y_train):
     plt.grid()
     plt.legend(loc='lower right')
     plt.show()
+    #plt.savefig('{}.png'.format(estimator))
 
 
 def svm(tag,parameters):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
-    model = SVC()
-    svm_model = GridSearchCV(model,parameters)
+    model = SVC(probability=True)
+    svm_model = GridSearchCV(model, parameters)
     svm_model.fit(xtrain_tfidf_ngram,Y_train)
 
     prediction = svm_model.predict(xvalid_tfidf_ngram)
     acc = metrics.accuracy_score(prediction,Y_test)
     f1_scr = f1_score(Y_test,prediction,average="weighted")
-    print(confusionMatrix(Y_test,prediction))
     #learningCurve(estimator=svm_model,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
-    return {"accuracy":acc,"f1_Score":f1_scr}
+    return {"model":svm_model,"accuracy":acc,"f1_Score":f1_scr}
 
     
 
@@ -112,10 +112,10 @@ def naive_bayes_classifier(tag):
     X_train,X_test,Y_train,Y_test = train_test_split(df.Clause,df[tag],
     test_size=0.2,random_state = 123)
 
-    encoder = preprocessing.LabelEncoder()
-    Y_train = encoder.fit_transform(Y_train)
-    Y_test = encoder.fit_transform(Y_test)
-    print(np.unique(Y_test))
+    # encoder = preprocessing.LabelEncoder()
+    # Y_train = encoder.fit_transform(Y_train)
+    # Y_test = encoder.fit_transform(Y_test)
+    # print(np.unique(Y_test))
     #Extracting features from text files
 
     count_vect = CountVectorizer()
@@ -125,22 +125,21 @@ def naive_bayes_classifier(tag):
 
     tfidf_transformer = TfidfTransformer()
     X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-    #prior_tag1 = [0.676,0.198,0.077,0.049]
+    prior_tag1 = [0.676,0.198,0.077,0.049]
     #prior_tag2 = [0.54,0.21,0.09,0.08,0.06,0.02]
-    prior_tag3 = [0.26,0.23,0.12,0.11,0.09,0.09,0.07,0.03]
+    #prior_tag3 = [0.26,0.23,0.12,0.11,0.09,0.09,0.07,0.03]
     #clf = MultinomialNB().fit(X_train_tfidf, Y_train)
     # prior = None
-    text_clf = Pipeline([('vect', CountVectorizer()), ('tfidf', TfidfTransformer()), ('clf', MultinomialNB(class_prior = prior_tag3))])
+    text_clf = Pipeline([('vect', CountVectorizer()), ('tfidf', TfidfTransformer()), ('clf', MultinomialNB(class_prior = prior_tag1))])
     text_clf = text_clf.fit(X_train,Y_train)
 
     # Performance of NB Classifier
 
     predicted = text_clf.predict(X_test)
-    print(confusionMatrix(Y_test,predicted))
     acc = np.mean(predicted == Y_test)
     f1_scr = f1_score(Y_test,predicted,average="weighted")
     #learningCurve(estimator=text_clf,X_train=X_train,Y_train=Y_train)
-    return {"accuracy":acc,"f1_Score":f1_scr}
+    return {"model":text_clf,"accuracy":acc,"f1_Score":f1_scr}
 
 
 def random_forest(tag,parameters):
@@ -150,12 +149,11 @@ def random_forest(tag,parameters):
     rf.fit(xtrain_tfidf_ngram, Y_train)
 
     predicted = rf.predict(xvalid_tfidf_ngram)
-    print(confusionMatrix(Y_test,predicted))
     print(rf.best_params_)
     f1_scr = f1_score(Y_test,predicted,average="weighted")
     acc = metrics.accuracy_score(Y_test,predicted)
     #learningCurve(estimator=rf,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
-    return {"accuracy":acc,"f1_Score":f1_scr}
+    return {"model":rf,"accuracy":acc,"f1_Score":f1_scr}
 
 def linearmodel(tag):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
@@ -167,7 +165,7 @@ def linearmodel(tag):
     f1_scr = f1_score(Y_test,predicted,average="weighted")
     acc = metrics.accuracy_score(Y_test,predicted)
     #learningCurve(estimator=rf,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
-    return {"accuracy":acc,"f1_Score":f1_scr}
+    return {"model":rf,"accuracy":acc,"f1_Score":f1_scr}
 
 def gradientboosting(tag,parameters):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
@@ -181,7 +179,7 @@ def gradientboosting(tag,parameters):
     acc = metrics.accuracy_score(Y_test,predicted)
     print(gb.best_params_)
     #learningCurve(estimator=gb,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
-    return {"accuracy":acc,"f1_Score":f1_scr}
+    return {"model":gb,"accuracy":acc,"f1_Score":f1_scr}
 
 def decision_tree(tag):
     xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data(tag)
@@ -193,7 +191,7 @@ def decision_tree(tag):
     acc = metrics.accuracy_score(Y_test,predicted)
     f1_scr = f1_score(Y_test,predicted,average="weighted")
     #learningCurve(estimator=decision_tree,X_train=xtrain_tfidf_ngram,Y_train=Y_train)
-    return {"accuracy":acc,"f1_Score":f1_scr}
+    return {"model":decision_tree,"accuracy":acc,"f1_Score":f1_scr}
 
 def topic_modeling(tag):
     X_train,X_test,Y_train,Y_test = train_test_split(df.Clause,df[tag],
@@ -221,18 +219,47 @@ def topic_modeling(tag):
     print(topic_summaries)
 
 
-print("Naive Bayes Tag3: ",naive_bayes_classifier("Tag3"))
-print("SVM Tag3: ",svm("Tag3",{'kernel':('linear', 'rbf')}))
-param_rf = {
-    'n_estimators': [100,300,500,600,700,800],
-    "max_depth":[20,22,26,28,30,32,34,36]
-}
-#{'max_depth': 32, 'n_estimators': 600}
-print("Random Forest Tag3: ",random_forest("Tag3",param_rf))
-print("Linear Model Tag3: ",linearmodel("Tag3"))
-param_boosting = {"n_estimators":[300,400],"max_depth":[10,15]}
-print("Gradient Boosting Tag3: ",gradientboosting("Tag3",param_boosting))
-print("Decision Tree Tag3: ",decision_tree("Tag3"))
+# param_rf = {
+#     'n_estimators': [100,300,500,600,700,800],
+#     "max_depth":[20,22,26,28,30,32,34,36]
+# }
+param_rf = {'max_depth': [32], 'n_estimators': [600]}
+
+# param_boosting = {"n_estimators":[300,400],"max_depth":[10,15]}
+param_boosting = {"n_estimators":[300],"max_depth":[10]}
+
+# print("Naive Bayes Tag3: ",naive_bayes_classifier("Tag3"))
+# print("SVM Tag3: ",svm("Tag1",{'kernel':('linear', 'rbf')}))
+# print("Random Forest Tag3: ",random_forest("Tag3",param_rf))
+# print("Linear Model Tag3: ",linearmodel("Tag3"))
+# print("Gradient Boosting Tag3: ",gradientboosting("Tag3",param_boosting))
+# print("Decision Tree Tag3: ",decision_tree("Tag3"))
 
 #topic_modeling("Tag1")
+
+
+def voting_clasifier():
+    clf1 = linearmodel("Tag1")['model']
+    clf2 = svm("Tag1",{'kernel':('linear', 'rbf')})['model']
+    clf3 = random_forest("Tag1",param_rf)['model']
+   
+    eclf3 = ensemble.VotingClassifier(estimators=[('lr', clf1), ('svm', clf2),
+    ('rf',clf3)],voting='soft')#, weights=[2,1,1],flatten_transform=True)
+
+    xtrain_tfidf_ngram,xvalid_tfidf_ngram,Y_train,Y_test = data("Tag1")
+
+    eclf3 = eclf3.fit(xtrain_tfidf_ngram,Y_train)
+
+    pred = eclf3.predict(xvalid_tfidf_ngram)
+    acc = metrics.accuracy_score(Y_test,pred)
+    print("VotingClassifier Accuracy: ",acc)
+    return eclf3
+
+def classify(par):
+    model = voting_clasifier()
+    tfidf_vect_ngram = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}',max_features=5000)
+    tfidf_vect_ngram.fit(df["Clause"])
+    xtrain_tfidf_ngram =  tfidf_vect_ngram.transform(par)
+    pred = model.predict(xtrain_tfidf_ngram)
+    return pred
 
